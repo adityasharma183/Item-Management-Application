@@ -5,7 +5,9 @@ import Item from '../models/itemModel.js'
 // @access  Private
 export const getItems = async (req, res, next) => {
   try {
-    const items = await Item.find({ user: req.user.id }).sort({ createdAt: -1 })
+    // const items = await Item.find({ user: req.user.id }).sort({ createdAt: -1 })
+
+     const items = await Item.find().sort({ createdAt: -1 }).populate('user', 'name email');
 
     res.status(200).json({
       success: true,
