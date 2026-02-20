@@ -17,6 +17,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  // Vite environment variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
   useEffect(() => {
     if (token) {
       loadUser();
@@ -27,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
   const loadUser = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getme`, {
+      const response = await axios.get(`${API_URL}/auth/getme`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -45,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password
       });
@@ -57,14 +60,23 @@ export const AuthProvider = ({ children }) => {
       toast.success('Welcome back! 🎉');
       return { success: true };
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Login failed');
-      return { success: false, error: error.response?.data?.error };
+      console.error('Login error:', error.response?.data || error.message);
+      
+      let errorMessage = 'Login failed';
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (!error.response) {
+        errorMessage = 'Cannot connect to server. Make sure backend is running.';
+      }
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, userData);
+      const response = await axios.post(`${API_URL}/auth/register`, userData);
       
       const { token, user } = response.data;
       localStorage.setItem('token', token);
@@ -73,8 +85,17 @@ export const AuthProvider = ({ children }) => {
       toast.success('Account created successfully! 🚀');
       return { success: true };
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Registration failed');
-      return { success: false, error: error.response?.data?.error };
+      console.error('Registration error:', error.response?.data || error.message);
+      
+      let errorMessage = 'Registration failed';
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (!error.response) {
+        errorMessage = 'Cannot connect to server. Make sure backend is running.';
+      }
+      
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   };
 

@@ -13,6 +13,8 @@ connectDB()
 
 
 const app = express()
+
+app.get('/favicon.ico', (req, res) => res.status(204));
 app.use(cors());
 
 app.get("/api/test", (req, res) => {
